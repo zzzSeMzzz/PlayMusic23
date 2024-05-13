@@ -3,6 +3,7 @@ import com.android.tools.r8.internal.he
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    //alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
