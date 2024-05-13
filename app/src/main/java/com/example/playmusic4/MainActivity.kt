@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-        private const val DEFAULT_URL = "https://playmusic23.com/playlist.php?key=VFBXVg#/"//fixme
+        private const val DEFAULT_URL = "https://playmusic23.com/"
 
 
         lateinit var wv: WebView
