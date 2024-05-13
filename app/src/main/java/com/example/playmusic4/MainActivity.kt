@@ -9,19 +9,18 @@ import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
 import android.webkit.WebView
-import dev.funkymuse.viewbinding.viewBinding
 import android.webkit.WebViewClient
 import androidx.appcompat.app.AppCompatActivity
-import android.widget.TextView
 import com.example.playmusic4.databinding.ActivityMainBinding
 import com.example.playmusic4.util.JsInterface
+import dev.funkymuse.viewbinding.viewBinding
 
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
-        private const val DEFAULT_URL = "https://playmusic23.com"
+        private const val DEFAULT_URL = "https://playmusic23.com/playlist.php?key=VFBXVg#/"//fixme
 
 
         lateinit var wv: WebView
