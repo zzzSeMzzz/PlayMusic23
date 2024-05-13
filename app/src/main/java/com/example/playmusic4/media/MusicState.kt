@@ -6,9 +6,9 @@ package com.example.playmusic4.media
 data class MusicState(
     val isPlaying: Boolean = false,
     val currentDuration: Long = 0,
-    val title: String = "",
+    var title: String = "",
     val album: String = "",
-    val artist: String = "",
+    var artist: String = "",
 
     // Default bitmap
     //val albumArt: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),

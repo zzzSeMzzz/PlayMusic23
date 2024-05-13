@@ -24,8 +24,6 @@ class NotificationListener : BroadcastReceiver() {
 
 
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d(TAG, "onReceive: ")
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationUtil.createChannel(context)
 
         val action = try {
@@ -67,10 +65,15 @@ class NotificationListener : BroadcastReceiver() {
         var title = "Unknown title"
         var artist = "Unknown artist"
 
-        wv.evaluateJavascript("document.getElementsByClassName('simp-artist')[0].innerText") {
+        wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-artist')[0].innerText; })();") {
             artist = it
+            Log.d(TAG, "onReceive: JS $it")
         }
-        wv.evaluateJavascript("document.getElementsByClassName('simp-title')[0].innerText") {
+
+
+
+
+        wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-title')[0].innerText; })();") {
             title = it
         }
 
@@ -103,7 +106,7 @@ class NotificationListener : BroadcastReceiver() {
         val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        notificationManager.notify(0, notification)
+        //notificationManager.notify(0, notification)
     }
 
 }
