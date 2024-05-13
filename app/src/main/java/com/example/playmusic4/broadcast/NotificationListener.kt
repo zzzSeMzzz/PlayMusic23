@@ -2,7 +2,6 @@ package com.example.playmusic4.broadcast
 
 import android.app.Notification
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,6 +11,7 @@ import android.os.Build
 import android.util.Log
 import com.example.playmusic4.MainActivity.Companion.wv
 import com.example.playmusic4.media.MusicState
+import com.example.playmusic4.media.SongAction
 import com.example.playmusic4.util.JsInterface
 import com.example.playmusic4.util.NotificationUtil
 
@@ -28,21 +28,41 @@ class NotificationListener : BroadcastReceiver() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationUtil.createChannel(context)
 
+        val action = try {
+            SongAction.entries[intent.action?.toInt() ?: SongAction.Stop.ordinal]
+        } catch (e: Exception) {
+            SongAction.Stop
+        }
 
-        val pendingSwitchIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            Intent(context, NotificationListener::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        Log.d(TAG, "onReceive: action = $action")
 
-        if (JsInterface.playing) {
+        when(action) {
+            SongAction.Pause -> {
+                wv.evaluateJavascript("mediaElement.pause();", null)
+                JsInterface.playing = false
+            }
+            SongAction.Resume -> {
+                wv.evaluateJavascript("mediaElement.play();", null)
+                JsInterface.playing = true
+            }
+            SongAction.Next -> {
+                wv.evaluateJavascript("document.getElementsByClassName('simp-next fa fa-forward')[0].click();", null)
+                JsInterface.playing = true
+            }
+            SongAction.Previous -> {
+                wv.evaluateJavascript("document.getElementsByClassName('simp-prev fa fa-backward')[0].click();", null)
+                JsInterface.playing = true
+            }
+            else -> {}
+        }
+
+       /* if (JsInterface.playing) {
             wv.evaluateJavascript("mediaElement.pause();", null)
             JsInterface.playing = false
         } else {
             wv.evaluateJavascript("mediaElement.play();", null)
             JsInterface.playing = true
-        }
+        }*/
 
         val mediaSession = MediaSession(context, "MediaPlayerSessionService")
         val mediaMetadata = MediaMetadata.Builder().putLong(MediaMetadata.METADATA_KEY_DURATION, -1L).build()
