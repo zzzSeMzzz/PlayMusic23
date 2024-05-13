@@ -116,12 +116,11 @@ class MainActivity : AppCompatActivity() {
             override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                 super.onReceivedIcon(view, icon)
                 img = icon!!
-
-
             }
 
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
+
                 webTitle = title!!
             }
         }
