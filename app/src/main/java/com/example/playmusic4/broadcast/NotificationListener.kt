@@ -22,6 +22,7 @@ class NotificationListener : BroadcastReceiver() {
         private const val TAG = "NotificationListener"
     }
 
+    private val state = MusicState()
 
     override fun onReceive(context: Context, intent: Intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationUtil.createChannel(context)
@@ -62,37 +63,29 @@ class NotificationListener : BroadcastReceiver() {
             JsInterface.playing = true
         }*/
 
-        var title = "Unknown title"
-        var artist = "Unknown artist"
 
         wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-artist')[0].innerText; })();") {
-            artist = it
+            state.artist = it
             Log.d(TAG, "onReceive: JS $it")
         }
 
 
 
-
         wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-title')[0].innerText; })();") {
-            title = it
+            state.title = it
         }
 
-        Log.d(TAG, "onReceive: title=$title album=$artist")
 
         val mediaSession = MediaSession(context, "MediaPlayerSessionService")
         val mediaMetadata = MediaMetadata.Builder()
             .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
-            .putText(MediaMetadata.METADATA_KEY_ARTIST, artist)
-            .putText(MediaMetadata.METADATA_KEY_TITLE, title)
+            .putText(MediaMetadata.METADATA_KEY_ARTIST, state.artist)
+            .putText(MediaMetadata.METADATA_KEY_TITLE, state.title)
             //.putText(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, title)
             .build()
         mediaSession.setMetadata(mediaMetadata)
 
-        val state = MusicState(
-            isPlaying = JsInterface.playing,
-            title = title,
-            artist = artist
-        )
+        state.isPlaying = JsInterface.playing
 
         val notification = NotificationUtil.notificationMediaPlayer(
             context,
@@ -106,7 +99,7 @@ class NotificationListener : BroadcastReceiver() {
         val notificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        //notificationManager.notify(0, notification)
+        notificationManager.notify(0, notification)
     }
 
 }

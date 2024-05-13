@@ -4,7 +4,7 @@ package com.example.playmusic4.media
 
 //@Parcelize
 data class MusicState(
-    val isPlaying: Boolean = false,
+    var isPlaying: Boolean = false,
     val currentDuration: Long = 0,
     var title: String = "",
     val album: String = "",
