@@ -65,21 +65,21 @@ class NotificationListener : BroadcastReceiver() {
         }*/
 
         var title = "Unknown title"
-        var album = "Unknown album"
+        var artist = "Unknown artist"
 
         wv.evaluateJavascript("document.getElementsByClassName('simp-artist')[0].innerText") {
-            album = it
+            artist = it
         }
         wv.evaluateJavascript("document.getElementsByClassName('simp-title')[0].innerText") {
             title = it
         }
 
-        Log.d(TAG, "onReceive: title=$title album=$album")
+        Log.d(TAG, "onReceive: title=$title album=$artist")
 
         val mediaSession = MediaSession(context, "MediaPlayerSessionService")
         val mediaMetadata = MediaMetadata.Builder()
             .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
-            .putText(MediaMetadata.METADATA_KEY_ALBUM, album)
+            .putText(MediaMetadata.METADATA_KEY_ARTIST, artist)
             .putText(MediaMetadata.METADATA_KEY_TITLE, title)
             //.putText(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, title)
             .build()
@@ -88,7 +88,7 @@ class NotificationListener : BroadcastReceiver() {
         val state = MusicState(
             isPlaying = JsInterface.playing,
             title = title,
-            album = album
+            artist = artist
         )
 
         val notification = NotificationUtil.notificationMediaPlayer(

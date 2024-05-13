@@ -2,17 +2,13 @@ package com.example.playmusic4.util
 
 import android.app.Notification
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.os.Build
 import android.util.Log
 import android.webkit.JavascriptInterface
-import com.example.playmusic4.broadcast.NotificationListener
 import com.example.playmusic4.media.MusicState
-import kotlin.String
 
 
 class JsInterface(private val context: Context) {
@@ -29,22 +25,20 @@ class JsInterface(private val context: Context) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationUtil.createChannel(context)
 
-        val pendingSwitchIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            Intent(context, NotificationListener::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
 
         val state = MusicState(
             isPlaying = playing,
             title = "title",
-            album = "album"
+            album = "album",
+            artist = "artist"
         )
 
         val mediaSession = MediaSession(context, "MediaPlayerSessionService")
-        val mediaMetadata = MediaMetadata.Builder().putLong(MediaMetadata.METADATA_KEY_DURATION, -1L).build()
+        val mediaMetadata = MediaMetadata.Builder()
+            .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
+            .putText(MediaMetadata.METADATA_KEY_ARTIST, state.artist)
+            .putText(MediaMetadata.METADATA_KEY_TITLE, state.title)
+            .build()
         mediaSession.setMetadata(mediaMetadata)
 
         val notification = NotificationUtil.notificationMediaPlayer(
