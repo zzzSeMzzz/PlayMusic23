@@ -10,9 +10,10 @@ import android.media.session.MediaSession
 import android.os.Build
 import android.util.Log
 import com.example.playmusic4.MainActivity.Companion.wv
-import com.example.playmusic4.media.MusicState
 import com.example.playmusic4.media.SongAction
 import com.example.playmusic4.util.JsInterface
+import com.example.playmusic4.util.MEDIA_SESSION_NAME
+import com.example.playmusic4.util.MediaUtil
 import com.example.playmusic4.util.NotificationUtil
 
 
@@ -22,7 +23,7 @@ class NotificationListener : BroadcastReceiver() {
         private const val TAG = "NotificationListener"
     }
 
-    private val state = MusicState()
+   // private val state = MusicState()
 
     override fun onReceive(context: Context, intent: Intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationUtil.createChannel(context)
@@ -38,19 +39,19 @@ class NotificationListener : BroadcastReceiver() {
         when(action) {
             SongAction.Pause -> {
                 wv.evaluateJavascript("mediaElement.pause();", null)
-                JsInterface.playing = false
+                JsInterface.isPlaying = false
             }
             SongAction.Resume -> {
                 wv.evaluateJavascript("mediaElement.play();", null)
-                JsInterface.playing = true
+                JsInterface.isPlaying = true
             }
             SongAction.Next -> {
                 wv.evaluateJavascript("document.getElementsByClassName('simp-next fa fa-forward')[0].click();", null)
-                JsInterface.playing = true
+                JsInterface.isPlaying = true
             }
             SongAction.Previous -> {
                 wv.evaluateJavascript("document.getElementsByClassName('simp-prev fa fa-backward')[0].click();", null)
-                JsInterface.playing = true
+                JsInterface.isPlaying = true
             }
             else -> {}
         }
@@ -65,27 +66,27 @@ class NotificationListener : BroadcastReceiver() {
 
 
         wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-artist')[0].innerText; })();") {
-            state.artist = it
+            MediaUtil.musicState.artist = it
             Log.d(TAG, "onReceive: JS $it")
         }
 
 
 
         wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-title')[0].innerText; })();") {
-            state.title = it
+            MediaUtil.musicState.title = it
         }
 
 
-        val mediaSession = MediaSession(context, "MediaPlayerSessionService")
+        val mediaSession = MediaSession(context, MEDIA_SESSION_NAME)
         val mediaMetadata = MediaMetadata.Builder()
             .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
-            .putText(MediaMetadata.METADATA_KEY_ARTIST, state.artist)
-            .putText(MediaMetadata.METADATA_KEY_TITLE, state.title)
+            .putText(MediaMetadata.METADATA_KEY_ARTIST, MediaUtil.musicState.artist)
+            .putText(MediaMetadata.METADATA_KEY_TITLE, MediaUtil.musicState.title)
             //.putText(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, title)
             .build()
         mediaSession.setMetadata(mediaMetadata)
 
-        state.isPlaying = JsInterface.playing
+        MediaUtil.musicState.isPlaying = JsInterface.isPlaying
 
         val notification = NotificationUtil.notificationMediaPlayer(
             context,
@@ -93,7 +94,7 @@ class NotificationListener : BroadcastReceiver() {
                 .setMediaSession(mediaSession.sessionToken)
                 .setShowActionsInCompactView(0,1,2)
             ,
-            state
+            MediaUtil.musicState
         )
 
         val notificationManager =

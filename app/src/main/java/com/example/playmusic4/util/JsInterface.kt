@@ -11,64 +11,57 @@ import android.os.Looper
 import android.util.Log
 import android.webkit.JavascriptInterface
 import com.example.playmusic4.MainActivity
-import com.example.playmusic4.media.MusicState
 
 
 class JsInterface(private val context: Context) {
     companion object {
-        var playing = false
+        var isPlaying = false
         private const val TAG = "JsInterface"
     }
 
     private lateinit var mediaSession: MediaSession
-    private val state = MusicState(
-        isPlaying = playing,
-    )
+    /*private val state = MusicState(
+        isPlaying = isPlaying,
+    )*/
 
 
     @JavascriptInterface
     fun mediaAction(type: String?) {
-        Log.e(TAG, "JS action = $type")
-        playing = type?.toBoolean() ?: false
+        Log.d(TAG, "JS mediaAction = $type")
+        isPlaying = type?.toBoolean() ?: false
+        Log.d(TAG, "mediaAction: isPlaying = $isPlaying")
+        MediaUtil.musicState.isPlaying = isPlaying
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationUtil.createChannel(context)
 
-        var title = "Unknown title"
-        var artist = "Unknown artist"
-
         Handler(Looper.getMainLooper()).post {
             MainActivity.wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-artist')[0].innerText; })();") {
-                if (it.isNotEmpty()) artist = it
                 Log.d(TAG, "onReceive: JS artist $it")
-                state.artist = it
+                MediaUtil.musicState.artist = it
                 val mediaMetadata = MediaMetadata.Builder()
                     .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
-                    .putText(MediaMetadata.METADATA_KEY_ARTIST, state.artist)
-                    .putText(MediaMetadata.METADATA_KEY_TITLE, state.title)
+                    .putText(MediaMetadata.METADATA_KEY_ARTIST, MediaUtil.musicState.artist)
+                    .putText(MediaMetadata.METADATA_KEY_TITLE, MediaUtil.musicState.title)
                     .build()
                 mediaSession.setMetadata(mediaMetadata)
             }
 
             MainActivity.wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-title')[0].innerText; })();") {
-                if (it.isNotEmpty()) title = it
                 Log.d(TAG, "onReceive: JS title $it")
-                state.title = it
+                MediaUtil.musicState.title = it
                 val mediaMetadata = MediaMetadata.Builder()
                     .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
-                    .putText(MediaMetadata.METADATA_KEY_ARTIST, state.artist)
-                    .putText(MediaMetadata.METADATA_KEY_TITLE, state.title)
+                    .putText(MediaMetadata.METADATA_KEY_ARTIST, MediaUtil.musicState.artist)
+                    .putText(MediaMetadata.METADATA_KEY_TITLE, MediaUtil.musicState.title)
                     .build()
                 mediaSession.setMetadata(mediaMetadata)
             }
 
-
-
-
-            mediaSession = MediaSession(context, "MediaPlayerSessionService")
+            mediaSession = MediaSession(context, MEDIA_SESSION_NAME)
             val mediaMetadata = MediaMetadata.Builder()
                 .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
-                .putText(MediaMetadata.METADATA_KEY_ARTIST, state.artist)
-                .putText(MediaMetadata.METADATA_KEY_TITLE, state.title)
+                .putText(MediaMetadata.METADATA_KEY_ARTIST, MediaUtil.musicState.artist)
+                .putText(MediaMetadata.METADATA_KEY_TITLE, MediaUtil.musicState.title)
                 .build()
             mediaSession.setMetadata(mediaMetadata)
 
@@ -77,7 +70,7 @@ class JsInterface(private val context: Context) {
                 Notification.MediaStyle()
                     .setMediaSession(mediaSession.sessionToken)
                     .setShowActionsInCompactView(0, 1, 2),
-                state = state
+                state = MediaUtil.musicState
             )
 
             val notificationManager =
