@@ -37,7 +37,8 @@ class JsInterface(private val context: Context) {
         Handler(Looper.getMainLooper()).post {
             MainActivity.wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-artist')[0].innerText; })();") {
                 Log.d(TAG, "onReceive: JS artist $it")
-                MediaUtil.musicState.artist = it
+                val result = if(it.isNotEmpty() && it.length>2) it.substring(1, it.length-1) else it
+                MediaUtil.musicState.artist = result
                 val mediaMetadata = MediaMetadata.Builder()
                     .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
                     .putText(MediaMetadata.METADATA_KEY_ARTIST, MediaUtil.musicState.artist)
@@ -48,7 +49,8 @@ class JsInterface(private val context: Context) {
 
             MainActivity.wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-title')[0].innerText; })();") {
                 Log.d(TAG, "onReceive: JS title $it")
-                MediaUtil.musicState.title = it
+                val result = if(it.isNotEmpty() && it.length>2) it.substring(1, it.length-1) else it
+                MediaUtil.musicState.title = result
                 val mediaMetadata = MediaMetadata.Builder()
                     .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
                     .putText(MediaMetadata.METADATA_KEY_ARTIST, MediaUtil.musicState.artist)

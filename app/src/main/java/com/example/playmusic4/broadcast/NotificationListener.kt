@@ -66,14 +66,16 @@ class NotificationListener : BroadcastReceiver() {
 
 
         wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-artist')[0].innerText; })();") {
-            MediaUtil.musicState.artist = it
+            val result = if(it.isNotEmpty() && it.length>2) it.substring(1, it.length-1) else it
+            MediaUtil.musicState.artist = result
             Log.d(TAG, "onReceive: JS $it")
         }
 
 
 
         wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-title')[0].innerText; })();") {
-            MediaUtil.musicState.title = it
+            val result = if(it.isNotEmpty() && it.length>2) it.substring(1, it.length-1) else it
+            MediaUtil.musicState.title = result
         }
 
 
