@@ -5,10 +5,18 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.os.Build
 import android.util.Log
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.example.playmusic4.MainActivity
 import com.example.playmusic4.MainActivity.Companion.wv
 import com.example.playmusic4.media.SongAction
 import com.example.playmusic4.util.JsInterface
@@ -78,12 +86,52 @@ class NotificationListener : BroadcastReceiver() {
             MediaUtil.musicState.title = result
         }
 
+        wv.evaluateJavascript("(function() { return document.getElementsByClassName('simp-cover')[0].childNodes[0].style.background })();") {
+            Log.d(TAG, "onReceive: JS image $it")
+            try {
+                val match = "url(.*?)\\)".toRegex().findAll(it)
+                val foundedUrl = match.first().value
+                val result = MainActivity.IMAGE_URL + foundedUrl.substring(6, foundedUrl.length - 3)
+
+                Log.d(TAG, "mediaAction: $result")
+
+                Glide.with(context)
+                    .asBitmap()
+                    .load(GlideUrl(result))
+                    .listener(object : RequestListener<Bitmap> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Bitmap>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            Log.d(TAG, "onLoadFailed")
+                            return false;
+                        }
+
+                        override fun onResourceReady(
+                            resource: Bitmap,
+                            model: Any,
+                            target: Target<Bitmap>?,
+                            dataSource: DataSource,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            Log.d(TAG, "onResourceReady: success load")
+                            MediaUtil.musicState.albumArt = resource
+                            return false
+                        }
+                    }
+                    ).submit()
+            } catch (ignored: Exception) {}
+        }
+
 
         val mediaSession = MediaSession(context, MEDIA_SESSION_NAME)
         val mediaMetadata = MediaMetadata.Builder()
             .putLong(MediaMetadata.METADATA_KEY_DURATION, -1L)
             .putText(MediaMetadata.METADATA_KEY_ARTIST, MediaUtil.musicState.artist)
             .putText(MediaMetadata.METADATA_KEY_TITLE, MediaUtil.musicState.title)
+            .putBitmap(MediaMetadata.METADATA_KEY_ART, MediaUtil.musicState.albumArt)
             //.putText(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, title)
             .build()
         mediaSession.setMetadata(mediaMetadata)

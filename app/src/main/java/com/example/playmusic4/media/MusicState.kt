@@ -1,5 +1,6 @@
 package com.example.playmusic4.media
 
+import android.graphics.Bitmap
 
 
 //@Parcelize
@@ -11,7 +12,7 @@ data class MusicState(
     var artist: String = "",
 
     // Default bitmap
-    //val albumArt: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
+    var albumArt: Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888),
 
     val duration: Long = 0
 )//: Parcelable

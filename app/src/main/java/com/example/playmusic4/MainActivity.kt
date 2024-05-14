@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "MainActivity"
+        const val IMAGE_URL = "https://playmusic23.com/"
         //private const val DEFAULT_URL = "https://playmusic23.com/"
         private const val DEFAULT_URL = "https://playmusic23.com/playlist.php?key=VFBXVg#/"
 
