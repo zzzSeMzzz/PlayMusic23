@@ -28,18 +28,19 @@ object MediaUtil {
 
 
 object NotificationUtil {
-    private const val channelID = "player_notification"
-    private const val channelName = "Media Player"
+    private const val channelID = "player"
+    private const val channelName = "MediaPlayer"
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createChannel(context: Context) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channel = NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH)
+        val channel = NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_LOW)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             channel.setAllowBubbles(false)
         }
 
         channel.setBypassDnd(true)
+        channel.setSound(null, null)
 
         notificationManager.createNotificationChannel(channel)
     }
