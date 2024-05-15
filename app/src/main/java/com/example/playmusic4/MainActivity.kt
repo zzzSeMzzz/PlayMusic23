@@ -16,6 +16,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import com.example.playmusic4.databinding.ActivityMainBinding
 import com.example.playmusic4.util.JsInterface
 import com.example.playmusic4.util.isInternetAvailable
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
             it.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
                     vb.webView.loadUrl(currentUrl)
+                    vb.tvNoInternet.isVisible = false
                 }
 
             })
@@ -67,6 +69,7 @@ class MainActivity : AppCompatActivity() {
                 currentUrl = url
                 if (!isInternetAvailable()) {
                     Log.d(TAG, "shouldOverrideUrlLoading: No internet")
+                    vb.tvNoInternet.isVisible = true
                     return false
                 }
 
