@@ -2,8 +2,10 @@ package com.example.playmusic4
 
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.playmusic4.databinding.ActivityMainBinding
 import com.example.playmusic4.util.JsInterface
+import com.example.playmusic4.util.isInternetAvailable
 import dev.funkymuse.viewbinding.viewBinding
 
 
@@ -24,22 +27,34 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
         const val IMAGE_URL = "https://playmusic23.com/"
-        //private const val DEFAULT_URL = "https://playmusic23.com/"
-        private const val DEFAULT_URL = "https://playmusic23.com/playlist.php?key=VFBXVg#/"
+        private const val DEFAULT_URL = "https://playmusic23.com/"
+        //private const val DEFAULT_URL = "https://playmusic23.com/playlist.php?key=VFBXVg#/"
 
 
         lateinit var wv: WebView
-        lateinit var img: Bitmap
-        lateinit var webTitle: String
 
     }
 
     private val vb by viewBinding(ActivityMainBinding::inflate)
 
+    private var currentUrl: String = DEFAULT_URL
+
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(vb.root)
+
+
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+        connectivityManager?.let {
+            it.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    vb.webView.loadUrl(currentUrl)
+                }
+
+            })
+        }
 
         wv = vb.webView
 
@@ -49,7 +64,11 @@ class MainActivity : AppCompatActivity() {
                 request: WebResourceRequest?
             ): Boolean {
                 val url = request?.url?.toString().toString()
-                val urlU = request?.url
+                currentUrl = url
+                if (!isInternetAvailable()) {
+                    Log.d(TAG, "shouldOverrideUrlLoading: No internet")
+                    return false
+                }
 
                 if (url.contains("t.me") || url.contains("tg://") ||
                     url.contains("vk.com") || url.contains("www.youtube.com")) {
@@ -113,17 +132,6 @@ class MainActivity : AppCompatActivity() {
                             "}"
                     vb.webView.evaluateJavascript(code, null)
                 }
-            }
-
-            override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
-                super.onReceivedIcon(view, icon)
-                img = icon!!
-            }
-
-            override fun onReceivedTitle(view: WebView?, title: String?) {
-                super.onReceivedTitle(view, title)
-
-                webTitle = title!!
             }
         }
 
