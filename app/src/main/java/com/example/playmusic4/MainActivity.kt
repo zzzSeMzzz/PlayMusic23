@@ -8,6 +8,8 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
@@ -19,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.playmusic4.databinding.ActivityMainBinding
 import com.example.playmusic4.util.JsInterface
+import com.example.playmusic4.util.isInternetAvailable
 import dev.funkymuse.viewbinding.viewBinding
 
 
@@ -45,17 +48,35 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(vb.root)
 
+        if(savedInstanceState==null) {
+            vb.tvNoInternet.isVisible = !isInternetAvailable()
+        }
 
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
-                vb.webView.loadUrl(currentUrl)
-                vb.tvNoInternet.isVisible = false
+                Handler(Looper.getMainLooper()).post {
+                    vb.tvNoInternet.isVisible = false
+                    vb.webView.loadUrl(currentUrl)
+                }
             }
+
+            override fun onLost(network: Network) {
+                super.onLost(network)
+                Log.d(TAG, "onLost: ")
+                Handler(Looper.getMainLooper()).post {
+                    vb.tvNoInternet.isVisible = true
+                }
+            }
+
+
 
             override fun onUnavailable() {
                 super.onUnavailable()
-                vb.tvNoInternet.isVisible = true
+                Log.d(TAG, "onUnavailable: ")
+                Handler(Looper.getMainLooper()).post {
+                    vb.tvNoInternet.isVisible = true
+                }
             }
         })
 
