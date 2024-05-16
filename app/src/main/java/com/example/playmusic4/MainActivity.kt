@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.playmusic4.databinding.ActivityMainBinding
 import com.example.playmusic4.util.JsInterface
-import com.example.playmusic4.util.isInternetAvailable
 import dev.funkymuse.viewbinding.viewBinding
 
 
@@ -47,16 +46,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(vb.root)
 
 
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
-        connectivityManager?.let {
-            it.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
-                override fun onAvailable(network: Network) {
-                    vb.webView.loadUrl(currentUrl)
-                    vb.tvNoInternet.isVisible = false
-                }
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                vb.webView.loadUrl(currentUrl)
+                vb.tvNoInternet.isVisible = false
+            }
 
-            })
-        }
+            override fun onUnavailable() {
+                super.onUnavailable()
+                vb.tvNoInternet.isVisible = true
+            }
+        })
 
         wv = vb.webView
 
@@ -67,11 +68,6 @@ class MainActivity : AppCompatActivity() {
             ): Boolean {
                 val url = request?.url?.toString().toString()
                 currentUrl = url
-                if (!isInternetAvailable()) {
-                    Log.d(TAG, "shouldOverrideUrlLoading: No internet")
-                    vb.tvNoInternet.isVisible = true
-                    return false
-                }
 
                 if (url.contains("t.me") || url.contains("tg://") ||
                     url.contains("vk.com") || url.contains("www.youtube.com")) {
