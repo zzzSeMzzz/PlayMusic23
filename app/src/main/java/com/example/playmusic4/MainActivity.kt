@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
 import android.webkit.WebChromeClient
@@ -31,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "MainActivity"
         const val IMAGE_URL = "https://playmusic23.com/"
         private const val DEFAULT_URL = "https://playmusic23.com/"
+        private const val EX_URL = "ex_url"
         //private const val DEFAULT_URL = "https://playmusic23.com/playlist.php?key=VFBXVg#/"
 
 
@@ -51,34 +53,6 @@ class MainActivity : AppCompatActivity() {
         if(savedInstanceState==null) {
             vb.tvNoInternet.isVisible = !isInternetAvailable()
         }
-
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                Handler(Looper.getMainLooper()).post {
-                    vb.tvNoInternet.isVisible = false
-                    vb.webView.loadUrl(currentUrl)
-                }
-            }
-
-            override fun onLost(network: Network) {
-                super.onLost(network)
-                Log.d(TAG, "onLost: ")
-                Handler(Looper.getMainLooper()).post {
-                    vb.tvNoInternet.isVisible = true
-                }
-            }
-
-
-
-            override fun onUnavailable() {
-                super.onUnavailable()
-                Log.d(TAG, "onUnavailable: ")
-                Handler(Looper.getMainLooper()).post {
-                    vb.tvNoInternet.isVisible = true
-                }
-            }
-        })
 
         wv = vb.webView
 
@@ -155,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val path = if (intent?.action == Intent.ACTION_VIEW) {
+        currentUrl = if (intent?.action == Intent.ACTION_VIEW) {
             val appLink: Uri? = intent.data
             Log.d(TAG, "onCreate: onNewIntent: $appLink")
             appLink.toString().replace("intent://", "https://")
@@ -163,16 +137,59 @@ class MainActivity : AppCompatActivity() {
             DEFAULT_URL
         }
 
-        vb.webView.loadUrl(path)
+
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                Handler(Looper.getMainLooper()).post {
+                    vb.tvNoInternet.isVisible = false
+                    vb.webView.loadUrl(currentUrl)
+                }
+            }
+
+            override fun onLost(network: Network) {
+                super.onLost(network)
+                Log.d(TAG, "onLost: ")
+                Handler(Looper.getMainLooper()).post {
+                    vb.tvNoInternet.isVisible = true
+                }
+            }
+
+
+
+            override fun onUnavailable() {
+                super.onUnavailable()
+                Log.d(TAG, "onUnavailable: ")
+                Handler(Looper.getMainLooper()).post {
+                    vb.tvNoInternet.isVisible = true
+                }
+            }
+        })
+
+        vb.webView.loadUrl(currentUrl)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         Log.d(TAG, "onNewIntent: ${intent.data}")
         intent.data?.let {
-            vb.webView.loadUrl(it.toString().replace("intent://", "https://"))
+            currentUrl = it.toString().replace("intent://", "https://")
+            vb.webView.loadUrl(currentUrl)
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
+        super.onSaveInstanceState(outState, outPersistentState)
+        outState.putString(EX_URL, currentUrl)
+    }
 
+    override fun onRestoreInstanceState(
+        savedInstanceState: Bundle?,
+        persistentState: PersistableBundle?
+    ) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState)
+        savedInstanceState?.let {
+            currentUrl = it.getString(EX_URL, DEFAULT_URL)
+        }
+    }
 }
